@@ -1,7 +1,7 @@
-ejabberd_domain: "{{ ldap_domain }}"
-auth_ldap_base_dn: "{{ ldap_base_dn }}"
-auth_ldap_host: ldap
-auth_ldap_user: "{{ ldap_admin }}"
-auth_ldap_pwd: "{{ ldap_admin_pwd }}"
+lider_ejabberd_domain: "portos.com.tr" #"{{ ldap_domain }}"
+lider_ejabberd_auth_ldap_base_dn: "dc=portos,dc=com,dc=tr" #"{{ ldap_base_dn }}"
+lider_ejabberd_auth_ldap_host: "ldap"
+lider_ejabberd_auth_ldap_user: "cn=admin,{{ lider_ejabberd_auth_ldap_base_dn }}"
+lider_ejabberd_auth_ldap_pwd: "admin"
 
-ejabberd_purge_previous: true
+lider_ejabberd_purge_previous: true

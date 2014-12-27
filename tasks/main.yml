@@ -3,7 +3,7 @@
 
 - name: purge if ejabberd exists  since changing hostname ruins mnesia database
   apt: pkg=ejabberd state=absent purge=true
-  when: ejabberd_purge_previous
+  when: lider_ejabberd_purge_previous
   tags: 
    - ejabberd
 
@@ -28,13 +28,13 @@
   # - ejabberd-cfg
 
 - name: configure ejabberd domain
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='IM_DOMAIN' replace='{{ ejabberd_domain }}'"
+  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='IM_DOMAIN' replace='{{ lider_ejabberd_domain }}'"
   tags: 
    - ejabberd
   # - ejabberd-cfg
 
 - name: configure ejabberd ldap auth base dn
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_BASE_DN' replace='{{ ejabberd_auth_ldap_base_dn }}'"
+  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_BASE_DN' replace='{{ lider_ejabberd_auth_ldap_base_dn }}'"
   #notify: 
   # - restart ejabberd
   tags: 
@@ -42,7 +42,7 @@
   # - ejabberd-cfg
 
 - name: configure ejabberd ldap auth host
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_HOST' replace='{{ ejabberd_auth_ldap_host }}'"
+  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_HOST' replace='{{ lider_ejabberd_auth_ldap_host }}'"
   #notify: 
   # - restart ejabberd
   tags: 
@@ -50,7 +50,7 @@
   # - ejabberd-cfg
 
 - name: configure ejabberd ldap auth user
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_USER' replace='{{ ejabberd_auth_ldap_user }}'"
+  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_USER' replace='{{ lider_ejabberd_auth_ldap_user }}'"
   #notify: 
   # - restart ejabberd
   tags: 
@@ -58,7 +58,7 @@
   # - ejabberd-cfg
 
 - name: configure ejabberd ldap auth password
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_PWD' replace='{{ ejabberd_auth_ldap_pwd }}'"
+  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_PWD' replace='{{ lider_ejabberd_auth_ldap_pwd }}'"
   #notify: 
   # - restart ejabberd
   tags: 
@@ -79,13 +79,13 @@
   sudo: false
 
 - name: create shared roster group called everyone
-  shell: "/usr/sbin/ejabberdctl srg-create everyone {{ ejabberd_domain }} 'everyone' this_is_everyone everyone"
+  shell: "/usr/sbin/ejabberdctl srg-create everyone {{ lider_ejabberd_domain }} 'everyone' this_is_everyone everyone"
   sudo: yes
   tags:
    - ejabberd
 
 - name: add all users to shared roster group called everyone
-  shell: "/usr/sbin/ejabberdctl srg-user-add @all@  {{ ejabberd_domain }} 'everyone' {{ ejabberd_domain }}"
+  shell: "/usr/sbin/ejabberdctl srg-user-add @all@  {{ lider_ejabberd_domain }} 'everyone' {{ lider_ejabberd_domain }}"
   sudo: yes
   tags:
    - ejabberd
