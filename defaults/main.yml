@@ -3,5 +3,5 @@ lider_ejabberd_auth_ldap_base_dn: "dc=portos,dc=com,dc=tr" #"{{ ldap_base_dn }}"
 lider_ejabberd_auth_ldap_host: "ldap"
 lider_ejabberd_auth_ldap_user: "cn=admin,{{ lider_ejabberd_auth_ldap_base_dn }}"
 lider_ejabberd_auth_ldap_pwd: "admin"
-
+lider_ejabberd_loglevel: 4
 lider_ejabberd_purge_previous: true

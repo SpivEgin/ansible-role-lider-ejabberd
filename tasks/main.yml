@@ -1,93 +1,85 @@
 ---
-# file: roles/ejabberd/tasks/main.yml
-
-- name: purge if ejabberd exists  since changing hostname ruins mnesia database
-  apt: pkg=ejabberd state=absent purge=true
-  when: lider_ejabberd_purge_previous
+- name: ejabberd required packages should be installed
+  apt: pkg={{ item }} state=present
+  with_items:
+   - wget
+   - libexpat1
+   - erlang-nox
+   - libyaml-0-2
+   - python-jinja2
   tags: 
    - ejabberd
-
-- name: ejabberd should be installed
-  apt: pkg=ejabberd state=present
+   
+- name: download ejabberd
+  get_url: url=http://www.process-one.net/downloads/ejabberd/14.12/ejabberd-14.12-linux-x86_64-installer.run 
+    dest=/tmp/ejabberd-installer.run  mode=755
+  #get_url: url=https://www.process-one.net/downloads/ejabberd/2.1.13/ejabberd-2.1.13-linux-x86-installer.run 
+  #  dest=/tmp/ejabberd-installer.run  mode=755
   tags: 
    - ejabberd
+   
+#- name: create ejabberd home   
+   
+- name: create group ejabberd
+  group: name=ejabberd state=present
+  sudo: yes
+  tags: ejabberd  
+  
+- name: create user ejabberd
+  user: name=ejabberd state=present group=ejabberd home=/opt/ejabberd
+  sudo: yes
+  tags: ejabberd
 
-- name: ejabberd service should be started
-  service: name=ejabberd state=started
+- name: install ejabberd
+  shell: /tmp/ejabberd-installer.run --mode unattended --prefix /opt/ejabberd --adminpw ejabberd
+  sudo: yes
   tags:
-   - ejabberd
+   - ejabberd    
 
-#- name: configure ejabberd
-  #template: src=ejabberd.cfg.j2 dest=/etc/ejabberd/ejabberd.cfg owner=ejabberd group=ejabberd mode=0600
-  #tags: ejabberd 
+- name: configure ejabberd
+  template: src=ejabberd.yml.tpl dest=/opt/ejabberd/conf/ejabberd.yml owner=ejabberd group=ejabberd mode=0600
+  sudo: yes
+  tags: ejabberd 
+  
+- name: configure ejabberdctl
+  template: src=ejabberdctl.cfg.tpl dest=/opt/ejabberd/conf/ejabberdctl.cfg owner=ejabberd group=ejabberd mode=0600
+  sudo: yes
+  tags: ejabberd 
 
-- name: copy ejabberd configuration
-  copy: src=ejabberd.cfg dest=/etc/ejabberd/ejabberd.cfg owner=ejabberd group=ejabberd mode=0600
+#- name: fix 
+  
+- name: start ejabberd
+  shell: /opt/ejabberd/bin/ejabberdctl start
+  sudo: yes
   tags: 
-   - ejabberd
-  # - ejabberd-cfg
-
-- name: configure ejabberd domain
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='IM_DOMAIN' replace='{{ lider_ejabberd_domain }}'"
-  tags: 
-   - ejabberd
-  # - ejabberd-cfg
-
-- name: configure ejabberd ldap auth base dn
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_BASE_DN' replace='{{ lider_ejabberd_auth_ldap_base_dn }}'"
-  #notify: 
-  # - restart ejabberd
-  tags: 
-   - ejabberd
-  # - ejabberd-cfg
-
-- name: configure ejabberd ldap auth host
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_HOST' replace='{{ lider_ejabberd_auth_ldap_host }}'"
-  #notify: 
-  # - restart ejabberd
-  tags: 
-   - ejabberd
-  # - ejabberd-cfg
-
-- name: configure ejabberd ldap auth user
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_USER' replace='{{ lider_ejabberd_auth_ldap_user }}'"
-  #notify: 
-  # - restart ejabberd
-  tags: 
-   - ejabberd
-  # - ejabberd-cfg
-
-- name: configure ejabberd ldap auth password
-  replace: "dest=/etc/ejabberd/ejabberd.cfg regexp='LDAP_PWD' replace='{{ lider_ejabberd_auth_ldap_pwd }}'"
-  #notify: 
-  # - restart ejabberd
-  tags: 
-   - ejabberd
-  # - ejabberd-cfg
-
-- name: ejabberd service should be restarted
-  service: name=ejabberd state=restarted
-  tags:
    - ejabberd
    
 - name: waiting for ejabberd server to come back
- # local_action: 
- #   module: wait_for host={{ inventory_hostname }} port=22 delay=10 timeout=10 state=started
- # sudo: false
   local_action: wait_for host={{ inventory_hostname }}
             state=started port=5222 delay=10 timeout=30
   sudo: false
-
-- name: create shared roster group called everyone
-  shell: "/usr/sbin/ejabberdctl srg-create everyone {{ lider_ejabberd_domain }} 'everyone' this_is_everyone everyone"
+   
+- name: register ejabberd domain admin
+  shell: /opt/ejabberd/bin/ejabberdctl register admin {{lider_ejabberd_domain}} admin
   sudo: yes
-  tags:
+  tags: 
    - ejabberd
+   - ejabberd-user
+   
 
-- name: add all users to shared roster group called everyone
-  shell: "/usr/sbin/ejabberdctl srg-user-add @all@  {{ lider_ejabberd_domain }} 'everyone' {{ lider_ejabberd_domain }}"
-  sudo: yes
-  tags:
-   - ejabberd
+
+#- name: create shared roster group called everyone
+#  shell: "/opt/ejabberd/bin/ejabberdctl srg-create everyone {{ lider_ejabberd_domain }} 'everyone' this_is_everyone everyone"
+#  sudo: yes
+#  tags:
+#   - ejabberd
+#   - ejabberdctl 
+
+#- name: add all users to shared roster group called everyone
+#  shell: "/opt/ejabberd/bin/ejabberdctl srg-user-add @all@  {{ lider_ejabberd_domain }} 'everyone' {{ lider_ejabberd_domain }}"
+#  sudo: yes
+#  tags:
+#   - ejabberd
+#   - ejabberdctl 
 
 
